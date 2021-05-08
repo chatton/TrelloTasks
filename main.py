@@ -18,6 +18,18 @@ def _parse_args():
         "--list", help="List Tasks", type=str, choices=("todo", "done", "inprogress")
     )
 
+    sub_parsers = parser.add_subparsers(help='sub-command help')
+
+    # Handle creation of cards
+    create_parser = sub_parsers.add_parser("create", help="Create command")
+    create_parser.add_argument("-t", "--type", type=str, choices=("todo", "done", "inprogress"))
+    create_parser.add_argument("-d", "--description", type=str)
+    create_parser.add_argument("-n", "--name", type=str)
+
+    parser.add_argument(
+        "--task-types", help="List Task Types", action="store_true"
+    )
+
     return parser.parse_args()
 
 
@@ -44,6 +56,15 @@ def _card_str(card) -> str:
     return f"{card.id}: {card.name} - {card.description}"
 
 
+def _create_card(trello_task: TrelloTask, args):
+    f = {
+        "todo": trello_task.add_todo_card,
+        "inprogress": trello_task.add_in_progress_card,
+        "done": trello_task.add_done_card
+    }[args.type]
+    f(args.name, desc=args.description)
+
+
 def main() -> int:
     config = _load_config()
 
@@ -57,7 +78,16 @@ def main() -> int:
     trello_task = TrelloTask(client, config["board"])
 
     args = _parse_args()
-    _list_tasks(trello_task, args.list)
+
+    if hasattr(args, "name"):
+        _create_card(trello_task, args)
+
+    if args.list:
+        _list_tasks(trello_task, args.list)
+
+    if args.task_types:
+        for t in ("todo", "done", "inprogress"):
+            print(t)
 
     return 0
 

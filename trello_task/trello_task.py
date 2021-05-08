@@ -42,7 +42,7 @@ class TrelloTask:
     def add_in_progress_card(self, name: str, **kwargs):
         return self._add_card(self.in_progress_list, name, **kwargs)
 
-    def add_done_task(self, name: str, **kwargs):
+    def add_done_card(self, name: str, **kwargs):
         return self._add_card(self.done_list, name, **kwargs)
 
     @staticmethod
