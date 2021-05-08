@@ -1,63 +1,47 @@
+#!/usr/bin/env python
+
 import sys
 import os
 import json
+import argparse
 
 from trello import TrelloClient
 
+from trello_task.trello_task import TrelloTask
+
 CONFIG_PATH = os.path.expanduser("~/.trello-tasks")
-DESIRED_LISTS = ("TODO", "In Progress", "Done")
 
 
-class TrelloTask:
-    def __init__(self, client: TrelloClient, board_name: str):
-        self.client = client
-        self.active_board = self._get_board_by_name(board_name)
-        self._ensure_lists()
+def _parse_args():
+    parser = argparse.ArgumentParser(prog='trello-task')
+    parser.add_argument(
+        "--list", help="List Tasks", type=str, choices=("todo", "done", "inprogress")
+    )
 
-    def _get_board_by_name(self, name: str):
-        return next(board for board in self.client.list_boards() if board.name == name)
-
-    def _get_list_by_name(self, name: str):
-        return next(trello_list for trello_list in self.active_board.list_lists() if
-                    trello_list.name == name and not trello_list.closed)
-
-    @property
-    def todo_list(self):
-        return self._get_list_by_name("TODO")
-
-    @property
-    def in_progress_list(self):
-        return self._get_list_by_name("In Progress")
-
-    @property
-    def done_list(self):
-        return self._get_list_by_name("Done")
-
-    def _ensure_lists(self):
-        open_trello_lists = [trello_list for trello_list in self.active_board.list_lists() if not trello_list.closed]
-        list_names = [tl.name for tl in open_trello_lists]
-        for list_name in DESIRED_LISTS:
-            if list_name not in list_names:
-                self.active_board.add_list(name=list_name)
-                continue
-
-    def add_todo_card(self, name: str, **kwargs):
-        return self._add_card(self.todo_list, name, **kwargs)
-
-    def add_in_progress_card(self, name: str, **kwargs):
-        return self._add_card(self.in_progress_list, name, **kwargs)
-
-    def add_done_task(self, name: str, **kwargs):
-        return self._add_card(self.done_list, name, **kwargs)
-
-    @staticmethod
-    def _add_card(trello_list, name: str, **kwargs):
-        trello_list.add_card(name, **kwargs)
+    return parser.parse_args()
 
 
 def _load_config():
     with open(CONFIG_PATH, "r") as f:
         return json.loads(f.read())
+
+
+def _list_tasks(trello_task: TrelloTask, task_type: str):
+    if task_type == "todo":
+        for card in trello_task.todo_list.list_cards():
+            print(_card_str(card))
+
+    if task_type == "inprogress":
+        for card in trello_task.done_list.list_cards():
+            print(_card_str(card))
+
+    if task_type == "done":
+        for card in trello_task.in_progress_list.list_cards():
+            print(_card_str(card))
+
+
+def _card_str(card) -> str:
+    return f"{card.id}: {card.name} - {card.description}"
 
 
 def main() -> int:
@@ -71,9 +55,9 @@ def main() -> int:
     )
 
     trello_task = TrelloTask(client, config["board"])
-    trello_task.add_done_task("Done task", desc="Some description")
-    trello_task.add_todo_card("Todo task", desc="Some description")
-    trello_task.add_in_progress_card("In Progress task", desc="Some description")
+
+    args = _parse_args()
+    _list_tasks(trello_task, args.list)
 
     return 0
 
