@@ -26,12 +26,20 @@ def _parse_args():
     create_parser.add_argument("-d", "--description", type=str)
     create_parser.add_argument("-n", "--name", type=str)
 
+    clone_parser = sub_parsers.add_parser("move", help="Move command")
+    clone_parser.add_argument("--from-list", type=str, choices=("todo", "done", "inprogress"))
+    clone_parser.add_argument("--to-list", type=str, choices=("todo", "done", "inprogress"))
+    clone_parser.add_argument("--card-id", type=str)
+
     parser.add_argument(
         "--task-types", help="List Task Types", action="store_true"
     )
 
     return parser.parse_args()
 
+# def _strip_strings(args)
+#     if hasattr(args, "from_list"):
+#         args.from_list = args.from_list.strip()
 
 def _load_config():
     with open(CONFIG_PATH, "r") as f:
@@ -44,16 +52,16 @@ def _list_tasks(trello_task: TrelloTask, task_type: str):
             print(_card_str(card))
 
     if task_type == "inprogress":
-        for card in trello_task.done_list.list_cards():
+        for card in trello_task.in_progress_list.list_cards():
             print(_card_str(card))
 
     if task_type == "done":
-        for card in trello_task.in_progress_list.list_cards():
+        for card in trello_task.done_list.list_cards():
             print(_card_str(card))
 
 
 def _card_str(card) -> str:
-    return f"{card.id}: {card.name} - {card.description}"
+    return f"{card.id} : {card.name} - {card.description}"
 
 
 def _create_card(trello_task: TrelloTask, args):
@@ -63,6 +71,26 @@ def _create_card(trello_task: TrelloTask, args):
         "done": trello_task.add_done_card
     }[args.type]
     f(args.name, desc=args.description)
+
+
+def _move_card(trello_task: TrelloTask, args):
+    """
+    move_card copies a card from one list to another and deletes the original.
+    TODO: figure out how to move the card instead of cloning/deleting
+    :param trello_task:
+    :param args:
+    :return:
+    """
+    print(f"moving card {args.card_id} from {args.from_list} to {args.to_list}")
+
+    from_list = trello_task.list_from_name(args.from_list)
+    to_list = trello_task.list_from_name(args.to_list)
+
+    to_list.add_card("", source=args.card_id)
+    for c in from_list.list_cards():
+        if c.id == args.card_id:
+            c.delete()
+            return
 
 
 def main() -> int:
@@ -79,15 +107,22 @@ def main() -> int:
 
     args = _parse_args()
 
+    if hasattr(args, "from_list"):
+        _move_card(trello_task, args)
+        return 0
+
     if hasattr(args, "name"):
         _create_card(trello_task, args)
+        return 0
 
     if args.list:
         _list_tasks(trello_task, args.list)
+        return 0
 
     if args.task_types:
         for t in ("todo", "done", "inprogress"):
             print(t)
+        return 0
 
     return 0
 

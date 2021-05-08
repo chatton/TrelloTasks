@@ -28,6 +28,13 @@ class TrelloTask:
     def done_list(self):
         return self._get_list_by_name("Done")
 
+    def list_from_name(self, name: str):
+        return {
+            "todo": lambda: self.todo_list,
+            "inprogress": lambda: self.in_progress_list,
+            "done": lambda: self.done_list
+        }[name]()
+
     def _ensure_lists(self):
         open_trello_lists = [trello_list for trello_list in self.active_board.list_lists() if not trello_list.closed]
         list_names = [tl.name for tl in open_trello_lists]
