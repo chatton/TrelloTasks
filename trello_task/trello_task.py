@@ -1,7 +1,7 @@
 from typing import List
 
 from trello import TrelloClient
-from datetime import date
+from datetime import date, timedelta
 
 DESIRED_LISTS = ("TODO", "In Progress", "Done")
 
@@ -92,12 +92,25 @@ class TrelloTask:
         from_list = self.list_from_name(from_list_name)
         to_list = self.list_from_name(to_list_name)
 
+        t = date.today()
+
         # add the date of movement as a comment so we can extract this information as needed.
         to_list.add_card("", source=card_id).comment("MovedAt: " + date.today().strftime("%d/%m/%Y"))
         for c in from_list.list_cards():
             if c.id == card_id:
                 c.delete()
                 return
+
+    def get_yesterdays_completed_tasks(self):
+        today = date.today()
+        prev_day = today - timedelta(days=1)
+        expected_comment = "MovedAt: " + prev_day.strftime("%d/%m/%Y")
+        completed_cards = []
+        for card in [c for c in self.done_list.list_cards() if not c.closed]:
+            for comment in card.comments:
+                if comment["data"]["text"] == expected_comment:
+                    completed_cards.append(card)
+        return completed_cards
 
     @staticmethod
     def _add_card(trello_list, name: str, **kwargs):

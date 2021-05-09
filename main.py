@@ -57,6 +57,8 @@ def main() -> int:
 
     args = _parse_args()
 
+    # trello_task.get_yesterdays_completed_tasks()
+
     if hasattr(args, "from_list"):
         trello_task.move_card(args.card_id, args.from_list, args.to_list)
         return 0
