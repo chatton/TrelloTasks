@@ -10,6 +10,7 @@ from trello import TrelloClient
 from trello_task.trello_task import TrelloTask
 
 CONFIG_PATH = os.path.expanduser("~/.trello-tasks")
+from datetime import date
 
 
 def _parse_args():
@@ -83,7 +84,8 @@ def _move_card(trello_task: TrelloTask, args):
     from_list = trello_task.list_from_name(args.from_list)
     to_list = trello_task.list_from_name(args.to_list)
 
-    to_list.add_card("", source=args.card_id)
+    # add the date of movement as a comment so we can extract this information as needed.
+    to_list.add_card("", source=args.card_id).comment("MovedAt: " + date.today().strftime("%d/%m/%Y"))
     for c in from_list.list_cards():
         if c.id == args.card_id:
             c.delete()
