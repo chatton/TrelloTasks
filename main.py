@@ -10,7 +10,6 @@ from trello import TrelloClient
 from trello_task.trello_task import TrelloTask
 
 CONFIG_PATH = os.path.expanduser("~/.trello-tasks")
-from datetime import date
 
 
 def _parse_args():
@@ -71,27 +70,6 @@ def _create_card(trello_task: TrelloTask, args):
     f(args.name, desc=args.description)
 
 
-def _move_card(trello_task: TrelloTask, args):
-    """
-    move_card copies a card from one list to another and deletes the original.
-    TODO: figure out how to move the card instead of cloning/deleting
-    :param trello_task:
-    :param args:
-    :return:
-    """
-    print(f"moving card {args.card_id} from {args.from_list} to {args.to_list}")
-
-    from_list = trello_task.list_from_name(args.from_list)
-    to_list = trello_task.list_from_name(args.to_list)
-
-    # add the date of movement as a comment so we can extract this information as needed.
-    to_list.add_card("", source=args.card_id).comment("MovedAt: " + date.today().strftime("%d/%m/%Y"))
-    for c in from_list.list_cards():
-        if c.id == args.card_id:
-            c.delete()
-            return
-
-
 def main() -> int:
     config = _load_config()
 
@@ -107,7 +85,7 @@ def main() -> int:
     args = _parse_args()
 
     if hasattr(args, "from_list"):
-        _move_card(trello_task, args)
+        trello_task.move_card(args.card_id, args.from_list, args.to_list)
         return 0
 
     if hasattr(args, "name"):

@@ -1,4 +1,5 @@
 from trello import TrelloClient
+from datetime import date
 
 DESIRED_LISTS = ("TODO", "In Progress", "Done")
 
@@ -51,6 +52,26 @@ class TrelloTask:
 
     def add_done_card(self, name: str, **kwargs):
         return self._add_card(self.done_list, name, **kwargs)
+
+    def move_card(self, card_id: str, from_list_name: str, to_list_name: str):
+        """
+        move_card copies a card from one list to another and deletes the original.
+        TODO: figure out how to move the card instead of cloning/deleting
+        :param trello_task:
+        :param args:
+        :return:
+        """
+        print(f"moving card {card_id} from {from_list_name} to {to_list_name}")
+
+        from_list = self.list_from_name(from_list_name)
+        to_list = self.list_from_name(to_list_name)
+
+        # add the date of movement as a comment so we can extract this information as needed.
+        to_list.add_card("", source=card_id).comment("MovedAt: " + date.today().strftime("%d/%m/%Y"))
+        for c in from_list.list_cards():
+            if c.id == card_id:
+                c.delete()
+                return
 
     @staticmethod
     def _add_card(trello_list, name: str, **kwargs):
