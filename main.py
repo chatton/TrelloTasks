@@ -61,15 +61,6 @@ def _card_str(card) -> str:
     return f"{card.id} : {card.name} - {card.description}"
 
 
-def _create_card(trello_task: TrelloTask, args):
-    f = {
-        "todo": trello_task.add_todo_card,
-        "inprogress": trello_task.add_in_progress_card,
-        "done": trello_task.add_done_card
-    }[args.type]
-    f(args.name, desc=args.description)
-
-
 def main() -> int:
     config = _load_config()
 
@@ -89,7 +80,7 @@ def main() -> int:
         return 0
 
     if hasattr(args, "name"):
-        _create_card(trello_task, args)
+        trello_task.create_card(args.type, args.name, args.description)
         return 0
 
     if args.list:

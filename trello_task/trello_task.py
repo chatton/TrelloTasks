@@ -53,6 +53,14 @@ class TrelloTask:
     def add_done_card(self, name: str, **kwargs):
         return self._add_card(self.done_list, name, **kwargs)
 
+    def create_card(self, task_type: str, name: str, desc: str):
+        f = {
+            "todo": self.add_todo_card,
+            "inprogress": self.add_in_progress_card,
+            "done": self.add_done_card
+        }[task_type]
+        f(name, desc=desc)
+
     def move_card(self, card_id: str, from_list_name: str, to_list_name: str):
         """
         move_card copies a card from one list to another and deletes the original.
