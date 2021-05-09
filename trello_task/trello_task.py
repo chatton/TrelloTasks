@@ -41,7 +41,7 @@ class TrelloTask:
     def _ensure_lists(self):
         open_trello_lists = [trello_list for trello_list in self.active_board.list_lists() if not trello_list.closed]
         list_names = [tl.name for tl in open_trello_lists]
-        for list_name in DESIRED_LISTS:
+        for list_name in reversed(DESIRED_LISTS):
             if list_name not in list_names:
                 self.active_board.add_list(name=list_name)
                 continue
