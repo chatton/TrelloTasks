@@ -37,9 +37,6 @@ def _parse_args():
 
     return parser.parse_args()
 
-# def _strip_strings(args)
-#     if hasattr(args, "from_list"):
-#         args.from_list = args.from_list.strip()
 
 def _load_config():
     with open(CONFIG_PATH, "r") as f:
