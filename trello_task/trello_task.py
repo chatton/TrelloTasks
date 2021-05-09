@@ -95,7 +95,10 @@ class TrelloTask:
         t = date.today()
 
         # add the date of movement as a comment so we can extract this information as needed.
-        to_list.add_card("", source=card_id).comment(date.today().strftime("%d/%m/%Y"))
+        card = to_list.add_card("", source=card_id)
+        if to_list_name == "done":
+            card.comment(date.today().strftime("%d/%m/%Y"))
+
         for c in from_list.list_cards():
             if c.id == card_id:
                 c.delete()
@@ -110,7 +113,15 @@ class TrelloTask:
                     completed_cards.append(card)
         return completed_cards
 
+    def get_todays_tasks(self):
+        return [c for c in self.in_progress_list.list_cards() if not c.closed]
+
     def get_previous_work_days_completed_tasks(self):
+        """
+        Fetches completed tasks from the most recent day that tasks
+        were completed in the last 7 days.
+        :return:
+        """
         days_to_check = 7
         count = 0
         today = date.today()

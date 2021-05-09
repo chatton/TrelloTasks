@@ -17,6 +17,7 @@ def _parse_args():
     parser.add_argument(
         "--list", help="List Tasks", type=str, choices=("todo", "done", "inprogress")
     )
+    parser.add_argument("--standup", help="Generate standup text for the day", action="store_true")
 
     sub_parsers = parser.add_subparsers(help='sub-command help')
 
@@ -43,6 +44,18 @@ def _load_config():
         return json.loads(f.read())
 
 
+def _generate_standup_text(yesterdays_tasks, todays_tasks):
+    standup_text = "#standup\n"
+    standup_text += "Y\n"
+    for yt in yesterdays_tasks:
+        standup_text += "  * " + yt.desc + "\n"
+
+    standup_text += "T\n"
+    for tt in todays_tasks:
+        standup_text += "  * " + tt.desc + "\n"
+    return standup_text
+
+
 def main() -> int:
     config = _load_config()
 
@@ -57,7 +70,11 @@ def main() -> int:
 
     args = _parse_args()
 
-    trello_task.get_previous_work_days_completed_tasks()
+    if args.standup:
+        yesterdays_tasks = trello_task.get_previous_work_days_completed_tasks()
+        todays_tasks = trello_task.in_progress_list.list_cards()
+        print(_generate_standup_text(yesterdays_tasks, todays_tasks))
+        return 0
 
     if hasattr(args, "from_list"):
         trello_task.move_card(args.card_id, args.from_list, args.to_list)
@@ -67,10 +84,10 @@ def main() -> int:
         trello_task.create_card(args.type, args.name, args.description)
         return 0
 
-    # if args.list:
-    #     for t in trello_task.list_tasks(args.list):
-    #         print(t)
-    #     return 0
+    if args.list:
+        for t in trello_task.list_tasks(args.list):
+            print(t)
+        return 0
 
     if args.task_types:
         for t in ("todo", "done", "inprogress"):
