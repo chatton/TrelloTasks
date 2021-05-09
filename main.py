@@ -57,7 +57,7 @@ def main() -> int:
 
     args = _parse_args()
 
-    # trello_task.get_yesterdays_completed_tasks()
+    trello_task.get_previous_work_days_completed_tasks()
 
     if hasattr(args, "from_list"):
         trello_task.move_card(args.card_id, args.from_list, args.to_list)
@@ -67,10 +67,10 @@ def main() -> int:
         trello_task.create_card(args.type, args.name, args.description)
         return 0
 
-    if args.list:
-        for t in trello_task.list_tasks(args.list):
-            print(t)
-        return 0
+    # if args.list:
+    #     for t in trello_task.list_tasks(args.list):
+    #         print(t)
+    #     return 0
 
     if args.task_types:
         for t in ("todo", "done", "inprogress"):

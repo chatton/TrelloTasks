@@ -95,22 +95,41 @@ class TrelloTask:
         t = date.today()
 
         # add the date of movement as a comment so we can extract this information as needed.
-        to_list.add_card("", source=card_id).comment("MovedAt: " + date.today().strftime("%d/%m/%Y"))
+        to_list.add_card("", source=card_id).comment(date.today().strftime("%d/%m/%Y"))
         for c in from_list.list_cards():
             if c.id == card_id:
                 c.delete()
                 return
 
-    def get_yesterdays_completed_tasks(self):
-        today = date.today()
-        prev_day = today - timedelta(days=1)
-        expected_comment = "MovedAt: " + prev_day.strftime("%d/%m/%Y")
+    def _fetch_completed_tasks_on_day(self, day):
+        expected_comment = day.strftime("%d/%m/%Y")
         completed_cards = []
         for card in [c for c in self.done_list.list_cards() if not c.closed]:
             for comment in card.comments:
                 if comment["data"]["text"] == expected_comment:
                     completed_cards.append(card)
         return completed_cards
+
+    def get_previous_work_days_completed_tasks(self):
+        days_to_check = 7
+        count = 0
+        today = date.today()
+        prev_day = today - timedelta(days=1)
+        res = self._fetch_completed_tasks_on_day(prev_day)
+        while not res:
+            if count >= days_to_check:
+                break
+            if not res:
+                print("No completed tasks found on " + prev_day.strftime("%d/%m/%Y"))
+
+            prev_day = prev_day - timedelta(days=1)
+            res = self._fetch_completed_tasks_on_day(prev_day)
+            count += 1
+
+        if res:
+            print("Found {} completed tasks from {}".format(len(res), prev_day.strftime("%d/%m/%Y")))
+
+        return res
 
     @staticmethod
     def _add_card(trello_list, name: str, **kwargs):
