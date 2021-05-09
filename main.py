@@ -43,24 +43,6 @@ def _load_config():
         return json.loads(f.read())
 
 
-def _list_tasks(trello_task: TrelloTask, task_type: str):
-    if task_type == "todo":
-        for card in trello_task.todo_list.list_cards():
-            print(_card_str(card))
-
-    if task_type == "inprogress":
-        for card in trello_task.in_progress_list.list_cards():
-            print(_card_str(card))
-
-    if task_type == "done":
-        for card in trello_task.done_list.list_cards():
-            print(_card_str(card))
-
-
-def _card_str(card) -> str:
-    return f"{card.id} : {card.name} - {card.description}"
-
-
 def main() -> int:
     config = _load_config()
 
@@ -84,7 +66,8 @@ def main() -> int:
         return 0
 
     if args.list:
-        _list_tasks(trello_task, args.list)
+        for t in trello_task.list_tasks(args.list):
+            print(t)
         return 0
 
     if args.task_types:

@@ -1,3 +1,5 @@
+from typing import List
+
 from trello import TrelloClient
 from datetime import date
 
@@ -61,6 +63,21 @@ class TrelloTask:
         }[task_type]
         f(name, desc=desc)
 
+    def list_tasks(self, task_type: str) -> List[str]:
+        names = []
+        if task_type == "todo":
+            for card in self.todo_list.list_cards():
+                names.append(self._card_str(card))
+
+        if task_type == "inprogress":
+            for card in self.in_progress_list.list_cards():
+                names.append(self._card_str(card))
+
+        if task_type == "done":
+            for card in self.done_list.list_cards():
+                names.append(self._card_str(card))
+        return names
+
     def move_card(self, card_id: str, from_list_name: str, to_list_name: str):
         """
         move_card copies a card from one list to another and deletes the original.
@@ -85,3 +102,7 @@ class TrelloTask:
     @staticmethod
     def _add_card(trello_list, name: str, **kwargs):
         trello_list.add_card(name, **kwargs)
+
+    @staticmethod
+    def _card_str(card) -> str:
+        return f"{card.id} : {card.name} - {card.description}"
