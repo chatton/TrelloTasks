@@ -57,9 +57,10 @@ class TrelloTask:
         """
         move_card copies a card from one list to another and deletes the original.
         TODO: figure out how to move the card instead of cloning/deleting
-        :param trello_task:
-        :param args:
-        :return:
+        :param card_id: the id of the card to be added
+        :param to_list_name: the list the card is currently in
+        :param from_list_name: the list the card should be moved to
+        :return: None
         """
         print(f"moving card {card_id} from {from_list_name} to {to_list_name}")
 
