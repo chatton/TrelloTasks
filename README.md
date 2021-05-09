@@ -21,3 +21,18 @@ optional arguments:
   --standup             Generate standup text for the day
   --task-types          List Task Types
 ```
+
+### Usage:
+
+Create a config file `~/.trello-tasks` with the following values.
+```
+{
+    "api_key": "<api-key>",
+    "api_secret": "<api-secret>",
+    "token": "<token>",
+    "token_secret": "<token-secret>",
+    "board" : "<board-name>"
+}
+```
+
+For information about how to get these values see the [py trello docs](https://pypi.org/project/py-trello/)
